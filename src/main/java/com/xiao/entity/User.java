@@ -15,6 +15,18 @@ public class User extends Model<User> {
 
     private static final long serialVersionUID = 1L;
 
+    public User(Long id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
+    public User() {
+    }
+
+    public User(Long id) {
+        this.id = id;
+    }
+
     /**
      * 主键ID
      */

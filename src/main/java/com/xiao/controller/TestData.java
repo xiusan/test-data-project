@@ -2,21 +2,19 @@ package com.xiao.controller;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
+import com.google.common.collect.Lists;
 import com.xiao.entity.User;
 import com.xiao.mapper.UserMapper;
 import com.xiao.service.impl.TestDataServiceImpl;
+import com.xiao.service.impl.UserServiceImpl;
 import com.xiao.utils.ResponseEntity;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 /**
+ * 总数据返回
  * Created by xioajinlu1990@163.com on 2020/12/3.
  */
 @RestController
@@ -24,6 +22,9 @@ import java.util.List;
 public class TestData {
     @Autowired
     private UserMapper mapper;
+
+    @Autowired
+    private UserServiceImpl userServiceImpl;
 
     @Autowired
     private TestDataServiceImpl testDataService;
@@ -40,9 +41,16 @@ public class TestData {
 
     }
 
-    @RequestMapping("test")
-    public ResponseEntity test() {
-        Page<User> mpPage = mapper.selectPage(new Page<>(1, 2), Wrappers.<User>query().eq("id", 1));
+    /**
+     * 测试分页实现
+     * @param page 当前页 默认1
+     * @param limit 最大查询条数 默认10
+     * @return
+     */
+    @RequestMapping("/test")
+    public ResponseEntity test(@RequestParam(defaultValue="1") Integer page,
+                               @RequestParam(defaultValue="10") Integer limit) {
+        Page<User> mpPage = userServiceImpl.page(new Page<>(page, limit), Wrappers.<User>query());
 
         List<User> records = mpPage.getRecords();
         for (User user:records) {
@@ -50,13 +58,74 @@ public class TestData {
 
         }
 
-        // pagehelper
-       // PageInfo<User> info = PageHelper.startPage(1, 2).doSelectPageInfo(() -> mapper.selectById(1));
-        PageInfo<User> info = PageHelper.startPage(1, 2).doSelectPageInfo(() -> mapper.selectById(1));
+        return ResponseEntity.success(mpPage);
+    }
 
-        List<User> list = info.getList();
+    /**
+     * 简单分页实现
+     * @param page 当前页 默认1
+     * @param limit 最大查询条数 默认10
+     * @return
+     */
+    @GetMapping("/getAllUserSimple")
+    public ResponseEntity getAllUserSimple(@RequestParam(defaultValue="1") Integer page,
+                                     @RequestParam(defaultValue="10") Integer limit) {
+        List<User> list = Lists.newArrayList();
+        for (int i = 0; i < 100; i++) {
+            list.add(new User(Long.parseLong(String.valueOf(i)),i+"分子"));
+            System.out.printf("VALUES ("+i+", 'Jone"+i+"'),");
 
-        return ResponseEntity.success(info);
+        }
+        return ResponseEntity.success(list);
+    }
+
+    public static void main(String[] args) {
+        for (int i = 0; i < 100; i++) {
+            System.out.println(" ("+i+", 'Jone"+i+"'),");
+
+        }
+    }
+
+    /**
+     * 简单分页实现
+     * @param page 当前页 默认1
+     * @param limit 最大查询条数 默认10
+     * @return
+     */
+    @GetMapping("/getAllUser")
+    public ResponseEntity getAllUser(@RequestParam(defaultValue="1") Integer page,
+                                     @RequestParam(defaultValue="10") Integer limit,
+                                     @RequestParam  String name,
+                                     @RequestParam String address) {
+        User user = new User();
+
+        if (!"".equals(name) && null != name){
+            user.setName(name);
+        }
+
+        Page<User> mpPage = userServiceImpl.page(new Page<>(page, limit), Wrappers.query(user));
+        return ResponseEntity.success(mpPage);
+    }
+
+
+    /**
+     * 添加用户
+     * @return
+     */
+    @PostMapping("/addUser")
+    public ResponseEntity addUser(@RequestBody User user) {
+//        if (!"".equals(user.getName()) && null != user.getName()){
+//            user.setName(name);
+//        }
+
+        boolean update = userServiceImpl.saveOrUpdate(user);
+        return ResponseEntity.success(update);
+    }
+
+    @GetMapping("/delete/{id}")
+    public ResponseEntity delete(@PathVariable Integer id) {
+        userServiceImpl.remove(Wrappers.<User>query().in("id", id));
+        return ResponseEntity.success();
     }
 
 }
