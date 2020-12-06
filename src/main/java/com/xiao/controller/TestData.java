@@ -95,8 +95,8 @@ public class TestData {
     @GetMapping("/getAllUser")
     public ResponseEntity getAllUser(@RequestParam(defaultValue="1") Integer page,
                                      @RequestParam(defaultValue="10") Integer limit,
-                                     @RequestParam  String name,
-                                     @RequestParam String address) {
+                                     @RequestParam(value = "name", required = false)  String name,
+                                     @RequestParam(value = "address", required = false)   String address) {
         User user = new User();
 
         if (!"".equals(name) && null != name){

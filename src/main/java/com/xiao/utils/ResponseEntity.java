@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ResponseEntity {
-    public static final Integer SUCCESS_CODE = 200;
+    public static final Integer SUCCESS_CODE = 20000;
     public static final Integer ERROR_CODE = 300;
     /**
      * 请求响应码：成功/失败
